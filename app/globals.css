@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+:root {
+  /* Aura Tokens */
+  --c-bg: #F5F5F7;
+  --c-dark: #0A0A0A;
+  --c-card: #FFFFFF;
+  --c-border: rgba(0, 0, 0, 0.08);
+
+  /* Easing */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Radius */
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --color-c-bg: var(--c-bg);
+  --color-c-dark: var(--c-dark);
+  --color-c-card: var(--c-card);
+  --color-c-border: var(--c-border);
+
+  --font-display: var(--font-space-grotesk);
+  --font-body: var(--font-inter);
+
+  --ease-out: var(--ease-out);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+/* Base Styles */
+body {
+  background-color: var(--c-bg);
+  color: var(--c-dark);
+  font-family: var(--font-body);
+}
+
+/* Utility classes */
+.display-font {
+  font-family: var(--font-display);
+}
+
+.body-font {
+  font-family: var(--font-body);
+}
+
+/* Hide scrollbar for interactions but allow scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.input-field {
+  @apply w-full bg-transparent border-b border-black/10 py-3 text-lg font-light outline-none transition-colors placeholder:text-gray-300 focus:border-black;
+}

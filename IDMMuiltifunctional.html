@@ -1,0 +1,1467 @@
+<html lang="en" class="antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iDM | Executive Architecture</title>
+    <!-- Fonts: Inter & Space Grotesk -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&amp;family=Space+Grotesk:wght@400;500;600&amp;display=swap"
+        rel="stylesheet">
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Icons: Iconify Solar Linear -->
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- GSAP / Lenis -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.33/dist/lenis.min.js"></script>
+    <style>
+        /* --- CORE VARS --- */
+        :root {
+            --c-bg: #F5F5F7;
+            --c-dark: #0A0A0A;
+            --c-card: #FFFFFF;
+            --c-border: rgba(0, 0, 0, 0.08);
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body {
+            background-color: var(--c-bg);
+            color: var(--c-dark);
+            font-family: var(--font-body);
+            margin: 0;
+            overflow-x: hidden;
+            cursor: default;
+            opacity: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        ::selection {
+            background: var(--c-dark);
+            color: #fff;
+        }
+
+        /* --- LAYOUT UTILS --- */
+        .wrapper {
+            position: relative;
+            z-index: 10;
+            background-color: var(--c-bg);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- TYPOGRAPHY UTILS --- */
+        .display-font {
+            font-family: var(--font-display);
+        }
+
+        .body-font {
+            font-family: var(--font-body);
+        }
+
+        .tracking-tightest {
+            letter-spacing: -0.06em;
+        }
+
+        /* --- COMPONENTS --- */
+        .loader {
+            position: fixed;
+            inset: 0;
+            background: var(--c-dark);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+        }
+
+        .word-wrap {
+            display: inline-block;
+            overflow: hidden;
+            vertical-align: bottom;
+        }
+
+        .noise {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        /* --- CARD STACK --- */
+        .stack-section {
+            position: relative;
+            background: var(--c-bg);
+        }
+
+        .stack-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            padding-bottom: 10vh;
+        }
+
+        .card-item {
+            position: sticky;
+            top: 10vh;
+            height: 80vh;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5vh;
+            perspective: 1000px;
+        }
+
+        .card-inner {
+            width: 95%;
+            height: 100%;
+            background: var(--c-card);
+            border: 1px solid var(--c-border);
+            border-radius: 1rem;
+            position: relative;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+            transform-origin: center bottom;
+            will-change: transform;
+        }
+
+        .card-content {
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid var(--c-border);
+            z-index: 2;
+        }
+
+        .card-img-wrap {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        @media (max-width: 1024px) {
+            .card-inner {
+                grid-template-columns: 1fr;
+            }
+
+            .card-content {
+                border-right: none;
+                border-bottom: 1px solid var(--c-border);
+                padding: 2rem;
+                order: 2;
+                height: 45%;
+            }
+
+            .card-img-wrap {
+                height: 55%;
+                order: 1;
+            }
+
+            .card-item {
+                height: 85vh;
+                top: 5vh;
+            }
+        }
+
+        /* --- CUSTOM UTILS FOR iDM --- */
+        .hero-text-huge {
+            font-size: 16vw;
+            line-height: 0.8;
+            letter-spacing: -0.06em;
+            mix-blend-mode: exclusion;
+            color: white;
+            font-weight: 500;
+        }
+
+        .scrub-word {
+            opacity: 0.15;
+            transition: opacity 0.1s;
+            will-change: opacity, color;
+        }
+
+        /* --- PENTAGON ANIMATION --- */
+        .pentagon-svg path,
+        .pentagon-svg line {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            transition: stroke-dashoffset 2s ease-out;
+        }
+
+        .pentagon-svg.in-view path,
+        .pentagon-svg.in-view line {
+            stroke-dashoffset: 0;
+        }
+
+        .pillar-node {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .pillar-node:hover circle {
+            fill: #000;
+        }
+
+        .pillar-node:hover text {
+            fill: #fff;
+            font-weight: 600;
+        }
+
+        .pillar-active circle {
+            fill: #000 !important;
+        }
+
+        .pillar-active text {
+            fill: #fff !important;
+            font-weight: 600 !important;
+        }
+
+        /* --- GRAPH --- */
+        .gap-line {
+            width: 0;
+            transition: width 1.5s var(--ease-out);
+        }
+
+        .gap-line.in-view {
+            width: 100%;
+        }
+
+        /* --- FORM STYLES --- */
+        .input-field {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            color: #000;
+            transition: all 0.3s ease;
+            border-radius: 0;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-bottom-color: #000;
+        }
+
+        .input-field::placeholder {
+            color: #9CA3AF;
+            font-weight: 300;
+        }
+
+        /* Remove default appearance for selects */
+        select.input-field {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0 center;
+            background-size: 1em;
+        }
+    </style>
+    <link id="all-fonts-link-font-geist" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-geist">
+        .font-geist {
+            font-family: 'Geist', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-roboto" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-roboto">
+        .font-roboto {
+            font-family: 'Roboto', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-montserrat" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-montserrat">
+        .font-montserrat {
+            font-family: 'Montserrat', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-poppins" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-poppins">
+        .font-poppins {
+            font-family: 'Poppins', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-playfair" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;900&amp;display=swap">
+    <style id="all-fonts-style-font-playfair">
+        .font-playfair {
+            font-family: 'Playfair Display', serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-instrument-serif" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:wght@400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-instrument-serif">
+        .font-instrument-serif {
+            font-family: 'Instrument Serif', serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-merriweather" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&amp;display=swap">
+    <style id="all-fonts-style-font-merriweather">
+        .font-merriweather {
+            font-family: 'Merriweather', serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-bricolage" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-bricolage">
+        .font-bricolage {
+            font-family: 'Bricolage Grotesque', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-jakarta" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap">
+    <style id="all-fonts-style-font-jakarta">
+        .font-jakarta {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-manrope" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap">
+    <style id="all-fonts-style-font-manrope">
+        .font-manrope {
+            font-family: 'Manrope', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-space-grotesk" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-space-grotesk">
+        .font-space-grotesk {
+            font-family: 'Space Grotesk', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-work-sans" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&amp;display=swap">
+    <style id="all-fonts-style-font-work-sans">
+        .font-work-sans {
+            font-family: 'Work Sans', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-pt-serif" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&amp;display=swap">
+    <style id="all-fonts-style-font-pt-serif">
+        .font-pt-serif {
+            font-family: 'PT Serif', serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-geist-mono" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-geist-mono">
+        .font-geist-mono {
+            font-family: 'Geist Mono', monospace !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-space-mono" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;display=swap">
+    <style id="all-fonts-style-font-space-mono">
+        .font-space-mono {
+            font-family: 'Space Mono', monospace !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-quicksand" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-quicksand">
+        .font-quicksand {
+            font-family: 'Quicksand', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-nunito" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&amp;display=swap">
+    <style id="all-fonts-style-font-nunito">
+        .font-nunito {
+            font-family: 'Nunito', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-newsreader" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400..800&amp;display=swap">
+    <style id="all-fonts-style-font-newsreader">
+        .font-newsreader {
+            font-family: 'Newsreader', serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-google-sans-flex" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-google-sans-flex">
+        .font-google-sans-flex {
+            font-family: 'Google Sans Flex', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-oswald" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-oswald">
+        .font-oswald {
+            font-family: 'Oswald', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-dm-sans" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-dm-sans">
+        .font-dm-sans {
+            font-family: 'DM Sans', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-cormorant" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-cormorant">
+        .font-cormorant {
+            font-family: 'Cormorant Garamond', serif !important;
+        }
+    </style>
+</head>
+
+<body class="text-sm sm:text-base leading-relaxed">
+    <!-- NOISE -->
+    <div class="noise"></div>
+
+    <!-- PRELOADER -->
+    <div class="loader fixed inset-0 z-[9999] bg-[#0A0A0A] text-white flex flex-col items-center justify-center"
+        style="">
+        <div class="overflow-hidden h-[1.2em] mb-6">
+            <div class="loader-counter display-font text-8xl md:text-9xl font-medium tracking-tighter leading-none translate-y-full"
+                style="">
+                100
+            </div>
+        </div>
+        <div class="w-64 h-[1px] bg-white/10 overflow-hidden">
+            <div class="loader-progress w-0 h-full bg-white" style=""></div>
+        </div>
+    </div>
+
+    <!-- NAVIGATION -->
+    <nav
+        class="fixed top-0 w-full px-6 py-6 md:px-12 md:py-8 flex justify-between items-center z-50 mix-blend-difference text-white mix-blend-exclusion">
+        <a href="#" class="display-font text-lg font-semibold tracking-tighter flex items-center gap-2">
+            ID MULTIFUNCTIONAL
+        </a>
+        <div class="hidden md:flex gap-8 text-xs font-medium tracking-widest uppercase opacity-80">
+            <a href="#gap" class="hover:opacity-100 transition-opacity">The Gap</a>
+            <a href="#method" class="hover:opacity-100 transition-opacity">
+                The Method
+            </a>
+            <a href="#pillars" class="hover:opacity-100 transition-opacity">
+                5 Pillars
+            </a>
+            <a href="#ladder" class="hover:opacity-100 transition-opacity">
+                Value Ladder
+            </a>
+            <a href="#contact" class="hover:opacity-100 transition-opacity">
+                Contact
+            </a>
+        </div>
+        <button class="md:hidden group">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="menu"
+                aria-hidden="true" class="lucide lucide-menu w-6 h-6 group-hover:scale-110 transition-transform">
+                <path d="M4 5h16"></path>
+                <path d="M4 12h16"></path>
+                <path d="M4 19h16"></path>
+            </svg>
+        </button>
+    </nav>
+
+    <!-- WRAPPER -->
+    <div class="wrapper">
+        <!-- HERO -->
+        <section class="h-screen relative flex items-center justify-center overflow-hidden" id="hero">
+            <div class="absolute inset-0 w-full h-full hero-img-wrap will-change-transform">
+                <!-- Architectural / Abstract Grid Background -->
+                <img src="https://images.unsplash.com/photo-1486718448742-163732cd1544?q=80&amp;w=3840&amp;auto=format&amp;fit=crop"
+                    class="w-full h-full object-cover brightness-[0.4] contrast-125 grayscale hero-img" alt="Structure"
+                    style="">
+            </div>
+
+            <div
+                class="relative z-10 w-full h-full flex flex-col justify-between pointer-events-none mix-blend-exclusion py-32 px-6 md:px-12">
+                <div class="overflow-hidden self-start">
+                    <h1 class="hero-text-huge hero-title-l translate-y-full block" style="">
+                        EXECUTION
+                    </h1>
+                </div>
+                <div class="overflow-hidden self-end text-right">
+                    <h1 class="hero-text-huge hero-title-r translate-y-full block italic font-light" style="">
+                        ARCHITECTURE
+                    </h1>
+                    <p class="hero-subtitle translate-y-[200%] text-white/80 text-lg md:text-xl max-w-lg ml-auto mt-4 font-light tracking-wide"
+                        style="">
+                        Installing the operating structure required to scale beyond the
+                        founder.
+                    </p>
+                </div>
+            </div>
+
+            <div
+                class="absolute bottom-12 left-6 md:left-12 text-white mix-blend-exclusion flex flex-col gap-6 pointer-events-auto">
+                <a href="#contact"
+                    class="group flex items-center gap-3 px-6 py-3 rounded-full border border-white/20 bg-white/5 backdrop-blur-md hover:bg-white hover:text-black transition-all duration-300 w-fit cursor-pointer">
+                    <span class="text-xs uppercase tracking-widest font-semibold">
+                        Book a 15-minute diagnostic
+                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        data-lucide="arrow-right" aria-hidden="true"
+                        class="lucide lucide-arrow-right w-4 h-4 group-hover:translate-x-1 transition-transform">
+                        <path d="M5 12h14"></path>
+                        <path d="m12 5 7 7-7 7"></path>
+                    </svg>
+                </a>
+                <div class="flex flex-col gap-1 opacity-60">
+                    <span class="text-[10px] uppercase tracking-[0.2em]">
+                        ID MULTIFUNCTIONAL / iDM
+                    </span>
+                    <span class="text-[10px] uppercase tracking-[0.2em]">
+                        Executive Architecture / System Design
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- INTRO / MANIFESTO -->
+        <section class="py-32 px-6 md:px-20 max-w-[1600px] mx-auto bg-[var(--c-bg)] relative z-20">
+            <div class="grid lg:grid-cols-12 gap-12">
+                <div class="lg:col-span-4 hidden lg:flex flex-col justify-between border-t border-black/10 pt-4">
+                    <span class="text-xs font-mono text-gray-400">01 — MANIFESTO</span>
+
+                    <div class="mt-12 text-xs font-mono text-gray-500 space-y-2">
+                        <p>OUTCOMES:</p>
+                        <p class="text-black">— Predictable Revenue</p>
+                        <p class="text-black">— Founder detachment</p>
+                        <p class="text-black">— Asset Valuation</p>
+                    </div>
+                </div>
+                <div class="lg:col-span-8 lg:col-start-5">
+                    <h2
+                        class="display-font text-4xl md:text-6xl lg:text-7xl font-medium leading-[1.05] tracking-tight max-w-6xl intro-scrub-text text-black">
+                        Precision before inspiration. Structure before motivation.
+                        Strategy is meaningless unless it survives the translation into
+                        execution. We do not coach. We build.
+                    </h2>
+                    <p class="mt-12 text-lg text-gray-500 font-light max-w-2xl leading-relaxed">
+                        Most companies stall because their operating system cannot support
+                        their ambition. We engineer the infrastructure—roles, decision
+                        paths, and governance—that turns volatility into a compounding
+                        asset.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- THE GAP -->
+        <section id="gap" class="py-24 px-6 md:px-20 border-t border-black/5 bg-[#f0f0f2]">
+            <div class="max-w-[1600px] mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-end mb-16">
+                    <div>
+                        <span class="text-xs font-mono text-gray-400 block mb-4 tracking-widest">
+                            02 — THE PROBLEM
+                        </span>
+                        <h2 class="display-font text-4xl md:text-5xl font-semibold tracking-tight">
+                            THE WISDOM GAP
+                        </h2>
+                    </div>
+                    <div class="max-w-md mt-6 md:mt-0">
+                        <p class="text-sm text-gray-500">
+                            The silent erosion of value that occurs between leadership
+                            intent and frontline reality.
+                        </p>
+                    </div>
+                </div>
+
+                <div
+                    class="relative w-full h-[400px] border border-black/5 bg-white rounded-lg p-8 md:p-12 overflow-hidden flex flex-col justify-center">
+                    <!-- Abstract Graph Visual -->
+                    <div class="absolute inset-0 opacity-[0.03]"
+                        style="background-image: linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px); background-size: 20px 20px;">
+                    </div>
+
+                    <div class="relative z-10 w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                        <div class="space-y-8">
+                            <div>
+                                <div class="flex justify-between text-xs uppercase tracking-widest font-semibold mb-2">
+                                    <span>Strategic Intent</span>
+                                    <span>100%</span>
+                                </div>
+                                <div class="h-px w-full bg-black/10">
+                                    <div class="h-full bg-black gap-line w-0"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div
+                                    class="flex justify-between text-xs uppercase tracking-widest font-semibold mb-2 text-gray-400">
+                                    <span>Process Adherence</span>
+                                    <span>60%</span>
+                                </div>
+                                <div class="h-px w-full bg-black/10">
+                                    <div class="h-full bg-gray-400 gap-line w-0" style="transition-delay: 0.2s"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div
+                                    class="flex justify-between text-xs uppercase tracking-widest font-semibold mb-2 text-gray-400">
+                                    <span>Execution Reality</span>
+                                    <span>35%</span>
+                                </div>
+                                <div class="h-px w-full bg-black/10">
+                                    <div class="h-full bg-gray-300 gap-line w-0" style="transition-delay: 0.4s"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border-l border-black/10 pl-8 md:pl-12">
+                            <span class="text-xs font-mono text-red-500 block mb-2">
+                                COST OF INACTION
+                            </span>
+                            <h3 class="display-font text-2xl font-medium mb-4">
+                                The Price of Drift
+                            </h3>
+                            <p class="text-sm text-gray-500 leading-relaxed mb-6">
+                                When architecture is undefined, every decision requires a
+                                meeting. Talent burns out compensating for broken systems.
+                                Margin leaks through undefined protocols.
+                            </p>
+                            <div
+                                class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest border-b border-black pb-0.5">
+                                Margin Leakage
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- METHOD STACK -->
+        <section id="method" class="stack-section pb-32 pt-32">
+            <div class="px-6 md:px-20 mb-20 flex justify-between items-end max-w-[1600px] mx-auto">
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-2 h-2 rounded-full bg-black"></div>
+                        <span class="text-xs font-semibold uppercase tracking-widest text-gray-500">
+                            Operating System
+                        </span>
+                    </div>
+                    <h2 class="display-font text-4xl md:text-5xl font-semibold tracking-tight">
+                        METHOD
+                        <br>
+                        STACK
+                    </h2>
+                </div>
+            </div>
+
+            <div class="stack-container px-4 md:px-0">
+                <!-- Card 01 -->
+                <div class="card-item">
+                    <div class="card-inner" style="">
+                        <div class="card-content">
+                            <div class="w-full">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="text-xs font-mono text-gray-400">
+                                        PHASE 01
+                                    </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" data-lucide="scan" aria-hidden="true"
+                                        class="lucide lucide-scan text-gray-400 w-5 h-5">
+                                        <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+                                        <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+                                        <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+                                        <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="display-font text-2xl md:text-3xl font-semibold tracking-tight mt-6">
+                                    ARCHITECTURE AUDIT
+                                </h3>
+                            </div>
+                            <div class="space-y-6">
+                                <p class="text-sm text-gray-600 leading-relaxed font-light">
+                                    A forensic analysis of your current commercial
+                                    infrastructure. We inspect data integrity, role clarity, and
+                                    process adherence to locate the leakage.
+                                </p>
+                                <div class="flex gap-2">
+                                    <span
+                                        class="px-3 py-1 bg-gray-100 rounded-full text-[10px] uppercase tracking-wider font-medium text-gray-600">
+                                        Diagnostics
+                                    </span>
+                                    <span
+                                        class="px-3 py-1 bg-gray-100 rounded-full text-[10px] uppercase tracking-wider font-medium text-gray-600">
+                                        Data Integrity
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-img-wrap">
+                            <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&amp;w=1600&amp;auto=format&amp;fit=crop"
+                                class="card-img object-cover w-full h-auto grayscale contrast-125" alt="Audit">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 02 -->
+                <div class="card-item">
+                    <div class="card-inner" style="">
+                        <div class="card-content">
+                            <div class="w-full">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="text-xs font-mono text-gray-400">
+                                        PHASE 02
+                                    </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" data-lucide="network" aria-hidden="true"
+                                        class="lucide lucide-network text-gray-400 w-5 h-5">
+                                        <rect x="16" y="16" width="6" height="6" rx="1"></rect>
+                                        <rect x="2" y="16" width="6" height="6" rx="1"></rect>
+                                        <rect x="9" y="2" width="6" height="6" rx="1"></rect>
+                                        <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"></path>
+                                        <path d="M12 12V8"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="display-font text-2xl md:text-3xl font-semibold tracking-tight mt-6">
+                                    SYSTEM REDESIGN
+                                </h3>
+                            </div>
+                            <div class="space-y-6">
+                                <p class="text-sm text-gray-600 leading-relaxed font-light">
+                                    Re-engineering the workflow. We define the standard
+                                    operating procedures, tech stack integration, and decision
+                                    matrices that remove ambiguity.
+                                </p>
+                                <div class="flex gap-2">
+                                    <span
+                                        class="px-3 py-1 bg-gray-100 rounded-full text-[10px] uppercase tracking-wider font-medium text-gray-600">
+                                        Blueprints
+                                    </span>
+                                    <span
+                                        class="px-3 py-1 bg-gray-100 rounded-full text-[10px] uppercase tracking-wider font-medium text-gray-600">
+                                        Protocols
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-img-wrap">
+                            <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&amp;w=1600&amp;auto=format&amp;fit=crop"
+                                class="card-img object-cover w-full h-auto grayscale contrast-125" alt="Blueprint">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 03 -->
+                <div class="card-item">
+                    <div class="card-inner" style="">
+                        <div class="card-content">
+                            <div class="w-full">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="text-xs font-mono text-gray-400">
+                                        PHASE 03
+                                    </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" data-lucide="shield-check" aria-hidden="true"
+                                        class="lucide lucide-shield-check text-gray-400 w-5 h-5">
+                                        <path
+                                            d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z">
+                                        </path>
+                                        <path d="m9 12 2 2 4-4"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="display-font text-2xl md:text-3xl font-semibold tracking-tight mt-6">
+                                    INSTALLATION &amp; GOVERNANCE
+                                </h3>
+                            </div>
+                            <div class="space-y-6">
+                                <p class="text-sm text-gray-600 leading-relaxed font-light">
+                                    Implementation is not a slide deck. We embed with your team
+                                    to install the new OS, training the habits required to
+                                    maintain structural integrity.
+                                </p>
+                                <div class="flex gap-2">
+                                    <span
+                                        class="px-3 py-1 bg-gray-100 rounded-full text-[10px] uppercase tracking-wider font-medium text-gray-600">
+                                        Adoption
+                                    </span>
+                                    <span
+                                        class="px-3 py-1 bg-gray-100 rounded-full text-[10px] uppercase tracking-wider font-medium text-gray-600">
+                                        Governance
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-img-wrap">
+                            <img src="https://images.unsplash.com/photo-1505664194779-8beaceb93744?q=80&amp;w=1600&amp;auto=format&amp;fit=crop"
+                                class="card-img object-cover w-full h-auto grayscale contrast-125" alt="Structure">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5 PILLARS (INTERACTIVE PENTAGON) -->
+        <section id="pillars" class="py-32 md:py-48 bg-white border-t border-black/5 overflow-hidden relative">
+            <div class="px-6 md:px-20 max-w-[1600px] mx-auto grid lg:grid-cols-2 gap-16 items-center">
+                <!-- Text Content -->
+                <div class="relative z-10 order-2 lg:order-1">
+                    <span class="text-xs font-mono text-gray-400 block mb-6 tracking-widest">
+                        SYSTEM COMPONENTS
+                    </span>
+
+                    <div id="pillar-content">
+                        <div class="pillar-text transition-opacity duration-300" data-pillar="0">
+                            <h2 class="display-font text-5xl md:text-6xl font-medium tracking-tight mb-6">
+                                THE 5 PILLARS
+                            </h2>
+                            <p class="text-lg text-gray-500 font-light leading-relaxed max-w-md">
+                                A complete commercial architecture requires structural
+                                integrity across five critical nodes. Hover over the blueprint
+                                to inspect.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mt-12">
+                        <a href="#contact"
+                            class="group flex items-center gap-3 px-6 py-3 rounded-full border border-black text-black hover:bg-black hover:text-white transition-all duration-300 w-fit cursor-pointer">
+                            <span class="text-xs uppercase tracking-widest font-semibold">
+                                Discuss your architecture
+                            </span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" data-lucide="arrow-right" aria-hidden="true"
+                                class="lucide lucide-arrow-right w-4 h-4 group-hover:translate-x-1 transition-transform">
+                                <path d="M5 12h14"></path>
+                                <path d="m12 5 7 7-7 7"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Interactive Graphic -->
+                <div class="relative flex justify-center items-center h-[500px] order-1 lg:order-2">
+                    <svg viewBox="0 0 500 500" class="w-full h-full max-w-[500px] pentagon-svg">
+                        <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:rgb(0,0,0);stop-opacity:0.2"></stop>
+                                <stop offset="100%" style="stop-color:rgb(0,0,0);stop-opacity:0.2"></stop>
+                            </linearGradient>
+                        </defs>
+                        <!-- Pentagon Paths -->
+                        <path d="M250 50 L440 190 L367 415 L133 415 L60 190 Z" fill="none" stroke="black"
+                            stroke-width="1" opacity="0.1"></path>
+                        <line x1="250" y1="50" x2="367" y2="415" stroke="black" stroke-width="1" opacity="0.1"></line>
+                        <line x1="250" y1="50" x2="133" y2="415" stroke="black" stroke-width="1" opacity="0.1"></line>
+                        <line x1="440" y1="190" x2="133" y2="415" stroke="black" stroke-width="1" opacity="0.1"></line>
+                        <line x1="60" y1="190" x2="367" y2="415" stroke="black" stroke-width="1" opacity="0.1"></line>
+                        <line x1="60" y1="190" x2="440" y2="190" stroke="black" stroke-width="1" opacity="0.1"></line>
+
+                        <!-- Nodes -->
+                        <!-- 1. Purpose (Top) -->
+                        <g class="pillar-node" data-id="1" transform="translate(250, 50)">
+                            <circle cx="0" cy="0" r="6" fill="#fff" stroke="black" stroke-width="2"></circle>
+                            <text x="0" y="-20" text-anchor="middle" font-family="var(--font-mono)" font-size="10"
+                                fill="#999" letter-spacing="2">
+                                PURPOSE
+                            </text>
+                        </g>
+                        <!-- 2. People (Right Top) -->
+                        <g class="pillar-node" data-id="2" transform="translate(440, 190)">
+                            <circle cx="0" cy="0" r="6" fill="#fff" stroke="black" stroke-width="2"></circle>
+                            <text x="20" y="5" text-anchor="start" font-family="var(--font-mono)" font-size="10"
+                                fill="#999" letter-spacing="2">
+                                PEOPLE
+                            </text>
+                        </g>
+                        <!-- 3. Process (Right Bottom) -->
+                        <g class="pillar-node" data-id="3" transform="translate(367, 415)">
+                            <circle cx="0" cy="0" r="6" fill="#fff" stroke="black" stroke-width="2"></circle>
+                            <text x="15" y="20" text-anchor="start" font-family="var(--font-mono)" font-size="10"
+                                fill="#999" letter-spacing="2">
+                                PROCESS
+                            </text>
+                        </g>
+                        <!-- 4. Cash (Left Bottom) -->
+                        <g class="pillar-node" data-id="4" transform="translate(133, 415)">
+                            <circle cx="0" cy="0" r="6" fill="#fff" stroke="black" stroke-width="2"></circle>
+                            <text x="-15" y="20" text-anchor="end" font-family="var(--font-mono)" font-size="10"
+                                fill="#999" letter-spacing="2">
+                                CASH
+                            </text>
+                        </g>
+                        <!-- 5. Experience (Left Top) - UPDATED POSITION -->
+                        <g class="pillar-node" data-id="5" transform="translate(60, 190)">
+                            <circle cx="0" cy="0" r="6" fill="#fff" stroke="black" stroke-width="2"></circle>
+                            <text x="0" y="-20" text-anchor="middle" font-family="var(--font-mono)" font-size="10"
+                                fill="#999" letter-spacing="2">
+                                EXPERIENCE
+                            </text>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- VALUE LADDER (HORIZONTAL SCROLL) -->
+        <section id="ladder" class="relative h-screen overflow-hidden bg-[var(--c-bg)] border-t border-black/5">
+            <!-- 500vw for 5 panels -->
+            <div class="horiz-wrap flex h-full w-[500vw]">
+                <!-- Panel 1 -->
+                <div
+                    class="flex flex-col md:px-20 bg-[#f9f9fb] w-screen h-full border-black/10 border-r pr-6 pl-6 justify-center">
+                    <span class="text-xs font-mono text-gray-400 mb-4 tracking-widest">
+                        LEVEL 01 — ASSETS
+                    </span>
+                    <h2 class="display-font text-5xl md:text-7xl font-medium tracking-tight text-gray-300">
+                        iDM BLUEPRINTS
+                    </h2>
+                    <div class="mt-8 flex flex-col gap-6 max-w-md">
+                        <p class="text-gray-600 text-lg leading-relaxed font-light">
+                            The raw architectural drawings. Access our library of standard
+                            operating procedures, role scorecards, and process maps.
+                        </p>
+                        <div class="flex items-baseline gap-4">
+                            <span class="text-2xl font-medium">1,495 SEK</span>
+                            <span class="text-xs uppercase tracking-wider text-gray-400">
+                                Digital Access
+                            </span>
+                        </div>
+                        <button
+                            class="text-xs font-semibold uppercase tracking-widest border-b border-black w-fit pb-1 hover:opacity-60 transition-opacity">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Panel 2 -->
+                <div
+                    class="w-screen h-full flex flex-col justify-center px-6 md:px-20 border-r border-black/10 bg-[#f4f4f6]">
+                    <span class="text-xs font-mono text-gray-400 mb-4 tracking-widest">
+                        LEVEL 02 — DIAGNOSTICS
+                    </span>
+                    <h2 class="display-font text-5xl md:text-7xl font-medium tracking-tight text-gray-400">
+                        DIGITAL SALES 360
+                    </h2>
+                    <div class="mt-8 flex flex-col gap-6 max-w-md">
+                        <p class="text-gray-600 text-lg leading-relaxed font-light">
+                            Automated architectural audit. Input your data, receive a
+                            calculated report on structural weakness and revenue leakage.
+                        </p>
+                        <div class="flex items-baseline gap-4">
+                            <span class="text-2xl font-medium">4,900 SEK</span>
+                            <span class="text-xs uppercase tracking-wider text-gray-400">
+                                One-time Report
+                            </span>
+                        </div>
+                        <button
+                            class="text-xs font-semibold uppercase tracking-widest border-b border-black w-fit pb-1 hover:opacity-60 transition-opacity">
+                            View Sample
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Panel 3 -->
+                <div
+                    class="w-screen h-full flex flex-col justify-center px-6 md:px-20 border-r border-black/10 bg-[#ededf0]">
+                    <span class="text-xs font-mono text-gray-400 mb-4 tracking-widest">
+                        LEVEL 03 — INSPECTION
+                    </span>
+                    <h2 class="display-font text-5xl md:text-7xl font-medium tracking-tight text-gray-600">
+                        EXPERT SALES 360
+                    </h2>
+                    <div class="mt-8 flex flex-col gap-6 max-w-md">
+                        <p class="text-gray-800 text-lg leading-relaxed font-light">
+                            Deep-dive forensic audit. We manually inspect your CRM, shadow
+                            calls, and interview key staff to build a correction roadmap.
+                        </p>
+                        <div class="flex items-baseline gap-4">
+                            <span class="text-2xl font-medium">45,000 SEK</span>
+                            <span class="text-xs uppercase tracking-wider text-gray-500">
+                                Credited upon retainer
+                            </span>
+                        </div>
+                        <button
+                            class="text-xs font-semibold uppercase tracking-widest border-b border-black w-fit pb-1 hover:opacity-60 transition-opacity">
+                            Book Audit
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Panel 4 -->
+                <div
+                    class="w-screen h-full flex flex-col justify-center px-6 md:px-20 border-r border-black/10 bg-[#e5e5e8]">
+                    <span class="text-xs font-mono text-gray-400 mb-4 tracking-widest">
+                        LEVEL 04 — WORKSHOPS
+                    </span>
+                    <h2 class="display-font text-5xl md:text-7xl font-medium tracking-tight text-gray-800">
+                        BLUEPRINTS LIVE
+                    </h2>
+                    <div class="mt-8 flex flex-col gap-6 max-w-md">
+                        <p class="text-gray-800 text-lg leading-relaxed font-light">
+                            Intensive implementation workshops. We work with your leadership
+                            team to install specific modules of the operating system.
+                        </p>
+                        <div class="flex items-baseline gap-4">
+                            <span class="text-2xl font-medium">35k - 85k SEK</span>
+                            <span class="text-xs uppercase tracking-wider text-gray-500">
+                                Per Module
+                            </span>
+                        </div>
+                        <button
+                            class="text-xs font-semibold uppercase tracking-widest border-b border-black w-fit pb-1 hover:opacity-60 transition-opacity">
+                            See Modules
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Panel 5 -->
+                <div class="w-screen h-full flex flex-col justify-center px-6 md:px-20 bg-white relative">
+                    <span class="text-xs font-mono text-gray-400 mb-4 tracking-widest">
+                        LEVEL 05 — PARTNERSHIP
+                    </span>
+                    <h2 class="display-font text-5xl md:text-7xl font-medium tracking-tight text-black">
+                        CHIEF SALES ARCHITECT
+                    </h2>
+                    <div class="mt-8 flex flex-col gap-6 max-w-md relative z-10">
+                        <p class="text-gray-800 text-lg leading-relaxed font-light">
+                            Fractional executive leadership. We take accountability for the
+                            architecture, overseeing installation and governance.
+                        </p>
+                        <div class="flex items-baseline gap-4">
+                            <span class="text-2xl font-medium">25k - 100k+ / mo</span>
+                            <span class="text-xs uppercase tracking-wider text-gray-500">
+                                Retainer
+                            </span>
+                        </div>
+                        <a href="#contact"
+                            class="text-xs font-semibold uppercase tracking-widest border-b border-black w-fit pb-1 hover:opacity-60 transition-opacity">
+                            Apply for Partnership
+                        </a>
+                    </div>
+
+                    <!-- Conversion Note -->
+                    <div class="absolute bottom-12 right-12 max-w-xs p-6 border border-black/5 bg-gray-50">
+                        <span class="font-mono text-[10px] text-gray-400 block mb-2 uppercase tracking-widest">
+                            Pricing Policy
+                        </span>
+                        <p class="text-xs text-gray-600 leading-relaxed">
+                            If a partnership (Level 5) is signed within 30 days of an Audit
+                            (Level 3), the full cost of the audit is credited on the first
+                            retainer invoice.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- THE ARCHITECT (BIO) -->
+        <section id="architect" class="py-32 px-6 md:px-20 max-w-[1600px] mx-auto bg-[var(--c-bg)] overflow-hidden">
+            <div class="mb-24 flex flex-col md:flex-row justify-between md:items-end gap-8">
+                <h2 class="display-font text-4xl md:text-5xl font-semibold tracking-tight">
+                    THE
+                    <br>
+                    ARCHITECT
+                </h2>
+                <div class="flex flex-col gap-1">
+                    <span class="text-lg font-medium">Ivan Dropuljic</span>
+                    <span class="text-xs font-mono text-gray-400 uppercase tracking-widest">
+                        Executive Architect / 20+ Years
+                    </span>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24">
+                <div class="relative aspect-[3/4] md:aspect-square bg-gray-200 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1600486913747-55e5470d6f40?w=800&amp;q=80"
+                        class="contrast-125 w-full h-full object-cover grayscale" alt="Ivan Dropuljic">
+                    <div class="bg-gradient-to-t from-black/50 to-transparent absolute top-0 right-0 bottom-0 left-0">
+                    </div>
+                </div>
+                <div class="flex flex-col justify-center">
+                    <p class="text-xl md:text-2xl leading-relaxed font-light text-gray-800 mb-8">
+                        "Scale is not a function of effort. It is a function of
+                        structure."
+                    </p>
+                    <div class="space-y-6 text-sm text-gray-500 leading-relaxed max-w-md">
+                        <p class="">
+                            With two decades of experience in turnaround scenarios and
+                            scaling systems, my role is to remove the friction that exists
+                            between a founder’s vision and the company’s output.
+                        </p>
+                        <p class="">
+                            I do not offer motivation. I offer the blueprints required to
+                            build a machine that functions without your constant
+                            intervention.
+                        </p>
+                    </div>
+                    <div class="mt-12 flex gap-12 border-t border-black/10 pt-8">
+                        <div>
+                            <span class="block text-3xl font-medium display-font">20+</span>
+                            <span class="text-[10px] uppercase tracking-widest text-gray-400">
+                                Years Exp
+                            </span>
+                        </div>
+                        <div>
+                            <span class="block text-3xl font-medium display-font">
+                                System
+                            </span>
+                            <span class="text-[10px] uppercase tracking-widest text-gray-400">
+                                Focus
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- INVERTED SECTION (TRUST SIGNALS) -->
+        <section id="inverted-section" class="py-48 bg-[#0A0A0A] text-white relative z-20">
+            <div class="px-6 md:px-20 max-w-[1600px] mx-auto grid md:grid-cols-2 gap-16">
+                <div class="reveal-item" style="">
+                    <span class="text-xs font-mono text-gray-500 block mb-6 tracking-widest">
+                        VALIDATION
+                    </span>
+                    <h2 class="display-font text-5xl md:text-7xl font-medium tracking-tighter leading-none">
+                        SIGNALS OF
+                        <br>
+                        TRUST
+                    </h2>
+                </div>
+                <div class="flex flex-col gap-0 reveal-item" style="">
+                    <div
+                        class="flex justify-between items-baseline border-b border-white/20 py-6 group hover:pl-4 transition-all duration-300 cursor-default">
+                        <span class="text-lg md:text-xl font-medium text-gray-200 group-hover:text-white">
+                            Turnaround Scenarios
+                        </span>
+                        <span class="text-xs font-mono text-gray-500">SPECIALTY</span>
+                    </div>
+                    <div
+                        class="flex justify-between items-baseline border-b border-white/20 py-6 group hover:pl-4 transition-all duration-300 cursor-default">
+                        <span class="text-lg md:text-xl font-medium text-gray-200 group-hover:text-white">
+                            Margin Protection
+                        </span>
+                        <span class="text-xs font-mono text-gray-500">OUTCOME</span>
+                    </div>
+                    <div
+                        class="flex justify-between items-baseline border-b border-white/20 py-6 group hover:pl-4 transition-all duration-300 cursor-default">
+                        <span class="text-lg md:text-xl font-medium text-gray-200 group-hover:text-white">
+                            Execution Reliability
+                        </span>
+                        <span class="text-xs font-mono text-gray-500">METRIC</span>
+                    </div>
+                    <div
+                        class="flex justify-between items-baseline border-b border-white/20 py-6 group hover:pl-4 transition-all duration-300 cursor-default">
+                        <span class="text-lg md:text-xl font-medium text-gray-200 group-hover:text-white">
+                            System Governance
+                        </span>
+                        <span class="text-xs font-mono text-gray-500">SERVICE</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT PAGE SECTION (NEW) -->
+        <section id="contact" class="py-32 md:py-48 px-6 md:px-20 bg-white border-t border-black/5 relative z-20">
+            <div class="max-w-[1200px] mx-auto grid md:grid-cols-2 gap-16 lg:gap-32">
+                <!-- Context Side -->
+                <div>
+                    <span class="text-xs font-mono text-gray-400 block mb-6 tracking-widest">
+                        INITIATE PROTOCOL
+                    </span>
+                    <h2 class="display-font text-5xl md:text-6xl font-medium tracking-tight mb-8">
+                        Let's Build the Machine.
+                    </h2>
+                    <p class="text-lg text-gray-500 font-light leading-relaxed mb-12 max-w-sm">
+                        We only work with founders ready to install rigorous architecture.
+                        If you are prepared to scale beyond yourself, send the signal.
+                    </p>
+
+                    <div class="space-y-8 mt-24 border-t border-black/5 pt-12">
+                        <div>
+                            <span class="text-[10px] uppercase tracking-widest text-gray-400 block mb-2">
+                                Direct Channel
+                            </span>
+                            <a href="mailto:ivan@idm.com"
+                                class="text-lg font-medium hover:opacity-60 transition-opacity">
+                                ivan@idm.com
+                            </a>
+                        </div>
+                        <div>
+                            <span class="text-[10px] uppercase tracking-widest text-gray-400 block mb-2">
+                                Headquarters
+                            </span>
+                            <p class="text-lg font-medium text-gray-800">
+                                Stockholm, Sweden Birger Jarlsgatan 12
+                            </p>
+                        </div>
+                        <div class="flex gap-6 pt-4">
+                            <a href="#"
+                                class="text-xs font-semibold uppercase tracking-widest hover:text-gray-500 transition-colors">
+                                LinkedIn
+                            </a>
+                            <a href="#"
+                                class="text-xs font-semibold uppercase tracking-widest hover:text-gray-500 transition-colors">
+                                Twitter
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Side -->
+                <div class="relative">
+                    <form class="flex flex-col gap-8 mt-4">
+                        <div class="group">
+                            <label
+                                class="text-[10px] uppercase tracking-widest text-gray-400 group-focus-within:text-black transition-colors">
+                                Full Name
+                            </label>
+                            <input type="text" placeholder="John Doe" class="input-field">
+                        </div>
+
+                        <div class="group">
+                            <label
+                                class="text-[10px] uppercase tracking-widest text-gray-400 group-focus-within:text-black transition-colors">
+                                Work Email
+                            </label>
+                            <input type="email" placeholder="john@company.com" class="input-field">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-8">
+                            <div class="group">
+                                <label
+                                    class="text-[10px] uppercase tracking-widest text-gray-400 group-focus-within:text-black transition-colors">
+                                    Inquiry Type
+                                </label>
+                                <select class="input-field">
+                                    <option>Architecture Audit</option>
+                                    <option>System Design</option>
+                                    <option>Partnership</option>
+                                    <option>General</option>
+                                </select>
+                            </div>
+                            <div class="group">
+                                <label
+                                    class="text-[10px] uppercase tracking-widest text-gray-400 group-focus-within:text-black transition-colors">
+                                    Company Size
+                                </label>
+                                <select class="input-field">
+                                    <option>1 - 10</option>
+                                    <option>11 - 50</option>
+                                    <option>50 - 200</option>
+                                    <option>200+</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="group">
+                            <label
+                                class="text-[10px] uppercase tracking-widest text-gray-400 group-focus-within:text-black transition-colors">
+                                Briefing
+                            </label>
+                            <textarea rows="4" placeholder="Describe your current structural bottlenecks..."
+                                class="input-field resize-none"></textarea>
+                        </div>
+
+                        <div class="pt-8 flex justify-end">
+                            <button type="button"
+                                class="group bg-black text-white px-8 py-4 rounded-full flex items-center gap-3 hover:bg-gray-800 transition-colors">
+                                <span class="text-xs font-semibold uppercase tracking-widest">
+                                    Transmit Request
+                                </span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" data-lucide="arrow-right" aria-hidden="true"
+                                    class="lucide lucide-arrow-right w-4 h-4 group-hover:translate-x-1 transition-transform">
+                                    <path d="M5 12h14"></path>
+                                    <path d="m12 5 7 7-7 7"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- END WRAPPER -->
+
+    <!-- SIMPLE FOOTER -->
+    <footer class="bg-white border-t border-black/5 py-12 px-6">
+        <div
+            class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6 opacity-40 hover:opacity-100 transition-opacity duration-500">
+            <div class="flex gap-8">
+                <span class="text-[10px] uppercase tracking-widest">
+                    © 2025 iDM Executive Architecture
+                </span>
+            </div>
+            <div class="flex gap-8">
+                <a href="#" class="text-[10px] uppercase tracking-widest hover:text-black transition-colors">
+                    Privacy Policy
+                </a>
+                <a href="#" class="text-[10px] uppercase tracking-widest hover:text-black transition-colors">
+                    Terms of Service
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smooth: true });
+        function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+        requestAnimationFrame(raf);
+        gsap.registerPlugin(ScrollTrigger);
+
+        const splitTextToScrub = (el) => {
+            const text = el.innerText;
+            el.innerHTML = text.split(' ').map(word => `<span class="scrub-word inline-block">${word}&nbsp;</span>`).join('');
+        };
+
+        // PENTAGON INTERACTION LOGIC
+        const pillarContent = document.getElementById('pillar-content');
+        const pillars = {
+            1: { title: "PURPOSE", text: "The strategic North Star. We align execution with intent, ensuring every structural decision serves the ultimate valuation goal." },
+            2: { title: "PEOPLE", text: "Role clarity and accountability. We design organizational charts based on function, not personality, removing single points of failure." },
+            3: { title: "PROCESS", text: "The codified workflow. We document and optimize the standard operating procedures that turn manual effort into automated reliability." },
+            4: { title: "CASH", text: "Margin protection and unit economics. We structure commercial agreements and pricing models to ensure profitability scales with volume." },
+            5: { title: "EXPERIENCE", text: "The user journey. We map the client lifecycle to ensure structural consistency delivers a predictable, premium outcome." }
+        };
+
+        document.querySelectorAll('.pillar-node').forEach(node => {
+            node.addEventListener('mouseenter', () => {
+                const id = node.getAttribute('data-id');
+                const data = pillars[id];
+
+                // Visual State
+                document.querySelectorAll('.pillar-node').forEach(n => n.classList.remove('pillar-active'));
+                node.classList.add('pillar-active');
+
+                // Content Update
+                const contentDiv = pillarContent.querySelector('.pillar-text');
+                gsap.to(contentDiv, {
+                    opacity: 0, duration: 0.2, onComplete: () => {
+                        contentDiv.innerHTML = `
+                    <h2 class="display-font text-5xl md:text-6xl font-medium tracking-tight mb-6">${data.title}</h2>
+                    <p class="text-lg text-gray-500 font-light leading-relaxed max-w-md">${data.text}</p>
+                  `;
+                        gsap.to(contentDiv, { opacity: 1, duration: 0.3 });
+                    }
+                });
+            });
+        });
+
+        const initAnimations = () => {
+            // Loader
+            const tl = gsap.timeline();
+            tl.to('.loader-counter', { y: 0, duration: 1, ease: 'power4.out' })
+                .to('.loader-progress', { width: '100%', duration: 1.2, ease: 'expo.inOut' }, 0)
+                .to('.loader-counter', { y: '-100%', duration: 0.5, ease: 'power2.in' }, 1.5)
+                .to('.loader', { clipPath: 'inset(0 0 100% 0)', duration: 0.8, ease: 'expo.inOut' }, 1.8)
+                .to('.hero-title-l, .hero-title-r', { y: 0, duration: 1.4, ease: 'power3.out', stagger: 0.1 }, 2.0)
+                .to('.hero-subtitle', { y: 0, duration: 1.4, ease: 'power3.out' }, 2.2);
+
+            // Hero Parallax
+            gsap.to('.hero-title-l', { x: '-15%', ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
+            gsap.to('.hero-title-r', { x: '15%', ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
+            gsap.to('.hero-img', { scale: 1.2, y: '20%', ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
+
+            // Intro Scrub
+            const introText = document.querySelector('.intro-scrub-text');
+            if (introText) {
+                splitTextToScrub(introText);
+                gsap.to('.scrub-word', {
+                    opacity: 1, color: '#000000', stagger: 0.05, ease: 'none',
+                    scrollTrigger: { trigger: introText, start: 'top 80%', end: 'bottom 40%', scrub: true }
+                });
+            }
+
+            // Gap Section Lines
+            const gapSection = document.getElementById('gap');
+            if (gapSection) {
+                ScrollTrigger.create({
+                    trigger: gapSection,
+                    start: "top 60%",
+                    onEnter: () => {
+                        document.querySelectorAll('.gap-line').forEach(el => el.classList.add('in-view'));
+                    }
+                });
+            }
+
+            // Card Stack Rotation
+            const cards = gsap.utils.toArray('.card-item');
+            cards.forEach((card, i) => {
+                const inner = card.querySelector('.card-inner');
+                const rot = (i % 2 === 0 ? 3 : -3) + (Math.random() * 2 - 1);
+                if (i < cards.length - 1) {
+                    gsap.to(inner, {
+                        scale: 0.9, rotation: rot, y: -30, filter: 'blur(5px)', opacity: 0.6, ease: 'none',
+                        scrollTrigger: { trigger: cards[i + 1], start: 'top bottom', end: 'top 20%', scrub: true }
+                    });
+                }
+            });
+
+            // Horizontal Scroll Section (5 Panels)
+            const horizSection = document.querySelector('#ladder');
+            if (horizSection) {
+                const horizWrap = horizSection.querySelector('.horiz-wrap');
+                gsap.to(horizWrap, {
+                    x: () => -(horizWrap.scrollWidth - window.innerWidth),
+                    ease: "none",
+                    scrollTrigger: {
+                        trigger: horizSection,
+                        start: "top top",
+                        end: () => `+=${horizWrap.scrollWidth - window.innerWidth}`,
+                        pin: true,
+                        scrub: 1,
+                        invalidateOnRefresh: true
+                    }
+                });
+            }
+
+            // Pentagon Draw
+            ScrollTrigger.create({
+                trigger: '#pillars',
+                start: "top 60%",
+                onEnter: () => {
+                    document.querySelector('.pentagon-svg').classList.add('in-view');
+                }
+            });
+
+            // Inverted Reveal
+            const darkSection = document.querySelector('#inverted-section');
+            if (darkSection) {
+                gsap.from(darkSection.querySelectorAll('.reveal-item'), {
+                    y: 60, opacity: 0, duration: 1, stagger: 0.2, ease: "power3.out",
+                    scrollTrigger: { trigger: darkSection, start: "top 70%" }
+                });
+            }
+        };
+
+        // Make visible and start
+        document.body.style.opacity = 1;
+        initAnimations();
+    </script>
+
+</body>
+
+</html>
